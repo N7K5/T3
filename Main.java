@@ -25,17 +25,27 @@ public class Main extends JFrame {
 
     int box_size= 40, box_space= 10;
 
+    int win=0, loss=0;
+
     JButton[][] btns;
     JButton btnReset;
 
     private JPanel contentPane;
     private JLabel Result_disp;
+
+    boolean delay_pc_input= true;
+	Timer timer= new Timer();
+	boolean timer_running= false;
     
     static Main frame;
     T3Logic game;
 
     public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
+        run_new_instance();
+    }
+
+    public static void run_new_instance() {
+        EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					frame = new Main();
@@ -54,7 +64,7 @@ public class Main extends JFrame {
         btns= new JButton[rows][cols];
         game= new T3Logic(rows, cols);
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         int width= box_size*cols + box_space*(cols+1);
         int height= box_size*rows + box_space*(rows+1)+ (int)(box_size*3);
@@ -100,7 +110,7 @@ public class Main extends JFrame {
             
             Result_disp.setBounds(dx, dy, wx, wy);
             Result_disp.setHorizontalAlignment(SwingConstants.CENTER);
-            Result_disp.setFont(new Font("Dialog", Font.BOLD, 12));
+            Result_disp.setFont(new Font("Dialog", Font.BOLD, 10));
         }
         contentPane.add(Result_disp);
 
@@ -123,27 +133,56 @@ public class Main extends JFrame {
             btnReset.setBounds(dx, dy, dw, dh);
         }
         contentPane.add(btnReset);
-
-
-
-
     }
 
 
     //: When a button is clicked, a string comes to this method...
     void btn_clicked(String _btn) { // _btn is set to "row_index + space + col_index"
         //System.out.println("clicked on"+_btn);
+        if(timer_running) {
+            set_text("I am thinking", new Color(215, 51, 51));
+            return;
+        }
         String[] rno= _btn.split(" ");
         boolean did= game.set(Integer.parseInt(rno[0]), Integer.parseInt(rno[1]), "X");
         if(!did) {
             set_text("Wrong Move...");
+        }
+        else {
+            if(!game.isFull()) {
+                    timer_running= true;
+                    timer.schedule(new TimerTask(){
+                        @Override
+                        public void run() {
+                            
+                            try {
+                                String pos[]= game.getBestMove("O").split(" ");
+                                // System.out.println("Got: " pos[0]+" "+pos[1]+" __");
+                                game.set(Integer.parseInt(pos[0]), Integer.parseInt(pos[1]), "O");
+                            } catch(Exception e) {
+                                System.out.println("Exception:\n\t"+e);
+                            }
+                            refresh();
+                            show_score();
+                            timer_running= false;
+                        }
+                    }, 700);
+            }
+            show_score();
         }
         refresh();
     }
 
     //: reset the game...
     void reset_game() {
-        game.reset();
+        if(true) {
+            game.reset();
+            set_text("Reset done...");
+        }
+        else {
+            set_text("Finish this one...");
+        }
+        
         refresh();
     }
 
@@ -157,6 +196,10 @@ public class Main extends JFrame {
     }
     void set_text(int win, int loss) {
         set_text("win:"+win+" "+"loss:"+loss, new Color(33, 4, 224));
+    }
+
+    void show_score() {
+        set_text(win, loss);
     }
 
     //: to refrest the display

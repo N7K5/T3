@@ -6,7 +6,7 @@ class T3Logic {
 
     //: 0 means nothing, 1 means X, 2 means O;
     String xo[]= {"", "X", "O"}; 
-    int X= 1, O= 0;
+    int X= 1, O= 2;
 
     T3Logic(int _rows, int _cols) {
         data= new int[_rows][_cols];
@@ -51,6 +51,42 @@ class T3Logic {
                 data[row][col]= 0;
             }
         }
+    }
+
+    boolean isFull() {
+        for(int row= 0; row<rows; row++) {
+            for(int col=0; col<cols; col++) {
+                if(data[row][col]==0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    String getBestMove(String _xo) throws Exception {
+        int me=0, he=0;
+        if(_xo.equals("X")|| _xo.equals("x")) {
+            me= X;
+            he= O;
+        }
+        else if(_xo.equals("O")|| _xo.equals("o")) {
+            me= O;
+            he= X;
+        }
+        else {
+            throw new Exception("GetBestMove accepts \"X\" or \"O\"");
+        }
+
+        for(int row= 0; row<rows; row++) {
+            for(int col=0; col<cols; col++) {
+                if(data[row][col] == 0) {
+                    return row +" " +col;
+                }
+            }
+        }
+        
+        throw new Exception("Grid Full");
     }
 
 
